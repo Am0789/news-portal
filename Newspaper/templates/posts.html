@@ -1,0 +1,46 @@
+{% extends 'flatpages/default.html' %}
+
+{% load custom_filters %}
+
+{% load custom_tags %}
+
+{% block title %}
+Posts
+{% endblock title %}
+
+{% block content %}
+   <h1>Все новости</h1>
+   <h2>{{ posts|length }}</h2>
+   <h3>{{ time_now|date:'M d Y' }}</h3>
+   <h3>{{ new_post|default_if_none:"Мы сообщим о свежих новостях" }}</h3>
+   <hr>
+   {% if posts %}
+       <table>
+           <tr>
+               <td>Автор</td>
+               <td>Тип</td>
+               <td>Время написания</td>
+               <td>Категория</td>
+               <td>Заголовок</td>
+               <td>Текст</td>
+               <td>Рейтинг</td>
+           </tr>
+           {% for post in posts %}
+           <tr>
+               <td>{{ author.user.username }}</td>
+               <td>{{ post.type }}</td>
+               <td>{{ post.time_in }}</td>
+               {% for category in post.category.all %}
+                   <td>{{ category.name_category }}</td>
+               {% endfor %}
+               <td>{{ post.head_name }}</td>
+               <td>{{ post.article_text|truncatewords:2 }}</td>
+               <td>{{ post.rate }}</td>
+           </tr>
+           {% endfor %}
+
+       </table>
+   {% else %}
+       <h2>Почитать - то и нечего...</h2>
+   {% endif %}
+{% endblock content %}

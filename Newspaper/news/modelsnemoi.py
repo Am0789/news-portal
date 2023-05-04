@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 
+
 article = '01'
 news = '02'
 
@@ -13,6 +14,7 @@ TYPE = [
 
 
 class Author(models.Model):
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     rate = models.IntegerField(default=0)
 
@@ -27,20 +29,22 @@ class Author(models.Model):
         print(author_post_comment_rating)
         print(author_post_comment_rating)
         self.rate = author_posts_rating['post_rating_sum'] + author_comment_rating['comments_rating_sum'] \
-                    + author_post_comment_rating['comments_rating_sum']
+            + author_post_comment_rating['comments_rating_sum']
         self.save()
 
 
 class Category(models.Model):
+
     name_category = models.CharField(max_length=250, unique=True)
 
 
 class Post(models.Model):
+
     objects = None
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     type = models.CharField(max_length=2, choices=TYPE, default=article)
     time_in = models.DateTimeField(auto_now_add=True)
-    category = models.ManyToManyField(Category, through='PostCategory')
+    category = models.ManyToManyField(Category, through="PostCategory")
     head_name = models.CharField(max_length=250, unique=True)
     article_text = models.TextField()
     rate = models.IntegerField(default=0)
@@ -59,16 +63,15 @@ class Post(models.Model):
         points = "..."
         return preview + points
 
-    def __str__(self):
-        return self.preview()
-
 
 class PostCategory(models.Model):
+
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
 
 class Comment(models.Model):
+
     objects = None
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -83,6 +86,3 @@ class Comment(models.Model):
     def dislike(self):
         self.rate -= 1
         self.save()
-
-    def __str__(self):
-        return self.comment()
