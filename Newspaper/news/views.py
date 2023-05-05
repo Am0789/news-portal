@@ -1,18 +1,31 @@
-from django.views.generic import ListView, DetailView
-from .models import Post
+from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView
+from .models import Post, Category
+from .filters import PostFilter
+from .forms import PostForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
+
 
 
 class PostsList(ListView):
-    # Указываем модель, объекты которой мы будем выводить
     model = Post
-    # Поле, которое будет использоваться для сортировки объектов
     ordering = 'head_name'
-    # Указываем имя шаблона, в котором будут все инструкции о том,
-    # как именно пользователю должны быть показаны наши объекты
     template_name = 'posts.html'
-    # Это имя списка, в котором будут лежать все объекты.
-    # Его надо указать, чтобы обратиться к списку объектов в html-шаблоне.
     context_object_name = 'posts'
+    paginate_by = 1
+
+    def get_filter(self):
+        return PostFilter(self.request.GET, queryset=super().get_queryset())
+
+    def get_queryset(self):
+        qs = self.get_filter().qs
+        return qs
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        filter_ = self.get_filter()
+        context['filter'] = filter_
+        return context
 
 
 class PostDetail(DetailView):
@@ -22,3 +35,34 @@ class PostDetail(DetailView):
     template_name = 'post.html'
     # Название объекта, в котором будет выбранный пользователем продукт
     context_object_name = 'post'
+
+    def get_context_data(self, **kwargs):
+        context = super(PostDetail, self).get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['user_category'] = Category.objects.filter(subscribed_users=self.request.user)
+        else:
+            context['user_category'] = None
+        return context
+
+
+class PostCreateViews(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
+    permission_required = 'news.add_post'
+    template_name = 'news/post_create.html'
+    form_class = PostForm
+
+
+class PostDeleteViews(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    permission_required = 'news.delete_post'
+    template_name = 'news/post_delete.html'
+    queryset = Post.objects.all()
+    success_url = '/posts/'
+
+
+class PostUpdateViews(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    permission_required = 'news.change_post'
+    template_name = 'news/post_create.html'
+    form_class = PostForm
+
+    def get_object(self, **kwargs):
+        id = self.kwargs.get('pk')
+        return Post.objects.get(pk=id)
