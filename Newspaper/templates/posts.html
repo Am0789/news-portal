@@ -30,7 +30,7 @@ Posts
            </tr>
            {% for post in posts %}
            <tr>
-               <td>{{ author.user.username }}</td>
+               <td>{{ author.User.username }}</td>
                <td>{{ post.time_in }}</td>
                 {% for category in post.category.all %}
               <td> {{ category.name_category }}</td>

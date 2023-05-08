@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
+from django.contrib.auth.forms import UserCreationForm
+from django import forms
 
 article = '01'
 news = '02'
@@ -13,6 +15,7 @@ TYPE = [
 
 
 class Author(models.Model):
+    objects = None
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     rate = models.IntegerField(default=0)
 
@@ -26,12 +29,14 @@ class Author(models.Model):
         print(author_posts_rating)
         print(author_post_comment_rating)
         print(author_post_comment_rating)
-        self.rate = author_posts_rating['post_rating_sum'] + author_comment_rating['comments_rating_sum'] \
+        self.rate = author_posts_rating['post_rating_sum'] + author_comment_rating['comments_rating_sum'] / \
                     + author_post_comment_rating['comments_rating_sum']
         self.save()
 
 
 class Category(models.Model):
+    DoesNotExist = None
+    objects = None
     name_category = models.CharField(max_length=250, unique=True)
 
 
@@ -85,4 +90,19 @@ class Comment(models.Model):
         self.save()
 
     def __str__(self):
-        return self.comment()
+        return self.comment_text
+
+
+class BaseRegisterForm(UserCreationForm):
+    email = forms.EmailField(label="Email")
+    first_name = forms.CharField(label="First Name")
+    last_name = forms.CharField(label="Last Name")
+
+    class Meta:
+        model = User
+        fields = ("username",
+                  "first_name",
+                  "last_name",
+                  "email",
+                  "password1",
+                  "password2",)

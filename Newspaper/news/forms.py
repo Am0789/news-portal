@@ -1,5 +1,7 @@
 from django.forms import ModelForm, ModelChoiceField, CharField, Select, ModelMultipleChoiceField, Textarea
 from .models import Post, Author, Category, TYPE
+from allauth.account.forms import SignupForm
+from django.contrib.auth.models import Group
 
 
 class PostForm(ModelForm):
@@ -14,3 +16,12 @@ class PostForm(ModelForm):
         fields = [
             'author', 'category', 'title', 'text', 'post_or_news'
         ]
+
+
+class BasicSignupForm(SignupForm):
+
+    def save(self, request):
+        user = super(BasicSignupForm, self).save(request)
+        basic_group = Group.objects.get(name='common')
+        basic_group.user_set.add(user)
+        return user

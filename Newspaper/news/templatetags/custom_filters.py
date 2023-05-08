@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter(name='censor')
 def censor(value):
     if not isinstance(value, str):
@@ -13,7 +14,7 @@ def censor(value):
         check = (value.lower()).find(word)
         while check != -1:
             len_ = len(word)
-            value = value[:check]+'*'*len_ + value[check+len_:]
+            value = value[:check] + '*' * len_ + value[check + len_:]
             check = (value.lower()).find(word)
     return value
 
@@ -26,6 +27,6 @@ def is_filters_uses(value):
         if value[(is_first_list_now + 1): (is_first_list_now + 5)] == 'page':
             return value[filters_arg:]
         else:
-            return ('&' + value[is_first_list_now + 1:])
+            return '&' + value[is_first_list_now + 1:]
     else:
         return ''
